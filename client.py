@@ -131,8 +131,8 @@ def on_moved(event):
 if __name__ == "__main__":
 
 
-    if id == "":
-        first_connection()
+
+    first_connection()
 
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
