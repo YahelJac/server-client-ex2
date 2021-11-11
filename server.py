@@ -32,11 +32,12 @@ while True:
     while len(data) < 100000:
         temp = client_socket.recv(1024)
         data = data + temp
-        if temp == b'':
+        if temp == b'' or len(temp)<1024:
             break
 
     #data = client_socket.recv(100)
     if data == b'new connection':
+        pass
         id = new_connect()
 
         client_socket.send(bytes(id, "utf-8"))
