@@ -19,8 +19,9 @@ id = ""
 def first_connection():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
-    s.send(b'new connection')
-    data = s.recv(100)
+    data = bytes('new connection', 'utf-8')
+    s.send(data)
+    data = s.recv(1024)
     print("my id: ", data)
     id = str(data)
     s.close()
@@ -118,7 +119,6 @@ def on_moved(event):
 
 if __name__ == "__main__":
 
-    first_connection()
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
@@ -133,6 +133,7 @@ if __name__ == "__main__":
     observer = Observer()
     observer.schedule(my_event_handler, path, recursive=True)
     observer.start()
+    first_connection()
     try:
         while True:
             ###############
