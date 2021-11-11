@@ -2,11 +2,6 @@ import socket
 import random
 import string
 
-
-
-
-
-
 def new_connect():
     id = id_generator()
     dict[id] = None

@@ -28,8 +28,6 @@ def first_connection():
 
 def push(path, flag, new_path):
 
-    if id == "":
-        first_connection()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
@@ -133,10 +131,8 @@ def on_moved(event):
 if __name__ == "__main__":
 
 
-
-
-
-
+    if id == "":
+        first_connection()
 
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
