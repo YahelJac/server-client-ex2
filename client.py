@@ -122,7 +122,7 @@ def on_moved(event):
     # pull:
     #   received old file name and path
     #   received new file name and path
-    #   change file location
+    #   change file location;lk
 
     print(f"ok ok ok, someone moved {event.src_path} to {event.dest_path}")
 
