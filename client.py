@@ -17,26 +17,28 @@ id = ""
 
 
 def need_delete(path):
-    os.remove(path)
+    #os.remove(path)
     print("deleted:" + path)
 
 
 def need_move(src_path, dest_path):
-    os.replace(src_path, dest_path)
+    #os.replace(src_path, dest_path)
     print("moved from:" + src_path + "to" + dest_path)
 
 
 def need_created(path, data):
-    f = open(path, 'wb')
-    f.write(data)
-    f.close()
+    # f = open(path, 'wb')
+    # f.write(data)
+    # f.close()
+    print("moved from:creater" )
 
 
 def need_modify(path, data):
-    os.remove(path)
-    f = open('path', 'wb')
-    f.write(data)
-    f.close()
+    #os.remove(path)
+    # f = open('path', 'wb')
+    # f.write(data)
+    # f.close()
+    print("moved from: modify")
 
 
 def first_connection():
