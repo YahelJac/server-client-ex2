@@ -36,6 +36,8 @@ while True:
         if temp == b'' or len(temp)<1024:
             break
 
+
+
     #data = client_socket.recv(100)
     if data == b'new connection':
         pass
@@ -47,9 +49,10 @@ while True:
         id, flag, path = splited[0][2:-1], splited[1], splited[2]
         list = dict.get(id)
         #if want only info
-        if flag == b'receive' and len(dict.get(id)) != 0 :
+        if flag == b'receive' and len(dict.get(id)) != 0:
             value = list.pop(0)
             client_socket.send(bytes(value, "utf-8"))
+
 
         #if want to give and receive info
         else:
