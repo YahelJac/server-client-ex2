@@ -20,10 +20,16 @@ def first_connection():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
     s.send(b'new connection')
-    data = s.recv(100)
+    data = s.recv(4)
     print("my id: ", data)
     id = str(data)
     s.close()
+
+
+def receive_info():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('127.0.0.1', 12345))
+    s.send(b'receive')
 
 
 def push(path, flag, new_path):
@@ -117,6 +123,10 @@ def on_moved(event):
 
 
 if __name__ == "__main__":
+
+
+    while True:
+
 
     first_connection()
     logging.basicConfig(level=logging.INFO,

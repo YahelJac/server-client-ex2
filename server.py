@@ -22,6 +22,7 @@ def id_generator():
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('', 12345))
 server.listen(5)
+
 dict = {}
 
 while True:
