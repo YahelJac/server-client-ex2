@@ -4,14 +4,15 @@ import string
 
 def new_connect():
     id = id_generator()
-    dict[id] = None
+    dict[id] = []
     return id
 
 
 def new_inf(id, data):
     for client in dict:
-        if client is not id:
-            dict.update({client, client + data})
+        if client != id:
+            dict.get(client).append(data)
+
 
 
 # TODO ask about import rendom and string
@@ -42,21 +43,28 @@ while True:
 
         client_socket.send(bytes(id, "utf-8"))
     else:
-        id, flag, path = data.decode('utf-8').split("|")
+        splited = data.decode('utf-8').split("|")
+        id, flag, path = splited[0][2:-1], splited[1], splited[2]
+        list = dict.get(id)
+        #if want only info
+        if flag == b'receive' and len(dict.get(id)) != 0 :
+            value = list.pop(0)
+            client_socket.send(bytes(value, "utf-8"))
 
-        if flag == "receive":
-            if dict.get(id) is not None:
-                client_socket.send(bytes(dict.get(id), "utf-8"))
-
-            dict.update({id, None})
+        #if want to give and receive info
         else:
 
-            new_inf(id, data)
+            new_inf(id, data.decode('utf-8'))
             print('Received: ', data)
-            if dict.get(id) is not None:
-                client_socket.send(bytes(dict.get(id), "utf-8"))
 
-            dict.update({id, None})
+            if len(dict.get(id)) != 0 :
+
+                value = dict.get(id).pop(0)
+                client_socket.send(bytes(value, "utf-8"))
+
+
+
+
 
 
 

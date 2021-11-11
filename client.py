@@ -6,7 +6,7 @@ import socket
 # data = s.recv(100)
 # print("Server sent: ", data)
 # s.close()
-
+import os
 import sys
 import time
 import logging
@@ -16,7 +16,31 @@ from watchdog.events import LoggingEventHandler
 id = ""
 
 
+def need_delete(path):
+    os.remove(path)
+    print("deleted:" + path)
+
+
+def need_move(src_path, dest_path):
+    os.replace(src_path, dest_path)
+    print("moved from:" + src_path + "to" + dest_path)
+
+
+def need_created(path, data):
+    f = open(path, 'wb')
+    f.write(data)
+    f.close()
+
+
+def need_modify(path, data):
+    os.remove(path)
+    f = open('path', 'wb')
+    f.write(data)
+    f.close()
+
+
 def first_connection():
+    global id
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
     data = bytes('new connection', 'utf-8')
@@ -24,6 +48,18 @@ def first_connection():
     data = s.recv(1024)
     print("my id: ", data)
     id = str(data)
+    s.close()
+
+def receive_info():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    s.connect(('127.0.0.1', 12345))
+    data = bytes(id + "| "'receive' + "|", 'utf-8')
+    s.send(data)
+
+    data = s.recv(1024)
+
+
     s.close()
 
 
