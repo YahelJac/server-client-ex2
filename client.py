@@ -14,15 +14,30 @@ import logging
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 
+id= ""
 
-def push(path, flag, new_path):
+def first_connection():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
-    #protocol = |flag|path|new_path(?)|binaryfile(?)
+    s.send(b'new connection')
+    data = s.recv(100)
+    print("my id: ", data)
+    id = str(data)
+    s.close()
+
+
+def push(path, flag, new_path):
+
+    if id == "":
+        first_connection()
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('127.0.0.1', 12345))
+    #protocol = |id|flag|path|new_path(?)|binaryfile(?)
 
     delimiter_byte = bytes(("|"), "utf-8")
 
-    protocol = flag +"|"+path
+    protocol = id + "|" + flag + "|" + path
     protocols_bytes = bytes((str(protocol)), "utf-8")
 
     if flag == "created":
@@ -41,6 +56,9 @@ def push(path, flag, new_path):
     if flag == "move":
         new_path_bytes = bytes((str(new_path)), "utf-8")
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
+
+    # while len(protocols_bytes)<1024:
+    #     temp = s.recv(6)
 
     s.send(protocols_bytes)
     s.close()
@@ -67,6 +85,8 @@ def on_created(event):
     print(f"hey, {event.src_path} has been created!")
 
 def on_deleted(event):
+    push(event.src_path,event.event_type,None)
+
     # push:
     #   notify delete
     #   send file name and path
@@ -77,6 +97,8 @@ def on_deleted(event):
     print(f"what the f**k! Someone deleted {event.src_path}!")
 
 def on_modified(event):
+    push(event.src_path,event.event_type,None)
+
     # push:
     #   notify modify
     #   send file
@@ -90,6 +112,8 @@ def on_modified(event):
     print(f"hey buddy, {event.src_path} has been modified")
 
 def on_moved(event):
+    print(f"hey buddy, {event.src_path} has been modified")
+
     # push:
     #   notify move
     #   send old file name and path
@@ -120,10 +144,10 @@ if __name__ == "__main__":
     path = sys.argv[1] if len(sys.argv) > 1 else '.'
     my_event_handler = LoggingEventHandler()
 
-    my_event_handler.on_created=on_created
-    my_event_handler.on_deleted=on_deleted
-    my_event_handler.on_modified=on_modified
-    my_event_handler.on_moved=on_moved
+    # my_event_handler.on_created=on_created
+    # my_event_handler.on_deleted=on_deleted
+    # my_event_handler.on_modified=on_modified
+    # my_event_handler.on_moved=on_moved
 
 
     observer = Observer()
