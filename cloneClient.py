@@ -1,4 +1,3 @@
-import os
 import socket
 
 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,7 +61,6 @@ def ask_for_info(s):
 
 
 def receive_info(s):
-    #TODO while loop to receive
     data = s.recv(1024)
     if (len(data) == 0):
         return
@@ -86,7 +84,6 @@ def push(src_path, flag, new_path):
     from os import path
     if not path.isfile(src_path):
         return
-
 
     delimiter_byte = bytes(("|"), "utf-8")
 
@@ -173,16 +170,7 @@ def on_moved(event):
 
     print(f"ok ok ok, someone moved {event.src_path} to {event.dest_path}")
 
-def need_delete(path):
-    os.remove(path)
-    print("deleted:"+ path)
 
-def need_move(src_path, dest_path):
-    os.replace(src_path, dest_path)
-    print("moved from:"+ src_path+"to"+dest_path)
-
-def need_created(src_path, dest_path):
- 
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO,
@@ -215,5 +203,3 @@ if __name__ == "__main__":
     finally:
         observer.stop()
         observer.join()
-
-
