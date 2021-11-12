@@ -15,7 +15,7 @@ def new_inf(id, data):
 
 
 
-# TODO ask about import rendom and string
+
 def id_generator():
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(128))
 
@@ -46,12 +46,17 @@ while True:
         client_socket.send(bytes(id, "utf-8"))
     else:
         splited = data.decode('utf-8').split("|")
-        id, flag, path = splited[0][2:-1], splited[1], splited[2]
+        id= splited[0][2:-1]
+        flag= splited[1]
+        if(len(splited) == 2):
+            pass
+        path = splited[2]
         list = dict.get(id)
         #if want only info
-        if flag == b'receive' and len(dict.get(id)) != 0:
-            value = list.pop(0)
-            client_socket.send(bytes(value, "utf-8"))
+        if flag == " receive":
+            if len(dict.get(id)) != 0:
+                value = list.pop(0)
+                client_socket.send(bytes(value, "utf-8"))
 
 
         #if want to give and receive info
