@@ -57,7 +57,7 @@ while True:
         if flag == " receive":
             if len(dict.get(id)) != 0:
                 value = list.pop(0)
-                client_socket.send(bytes(value, "utf-8"))
+                client_socket.send(value)
 
 
         #if want to give and receive info
