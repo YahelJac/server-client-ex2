@@ -52,6 +52,7 @@ while True:
             pass
         path = splited[2]
         list = dict.get(id)
+
         #if want only info
         if flag == " receive":
             if len(dict.get(id)) != 0:
@@ -62,7 +63,7 @@ while True:
         #if want to give and receive info
         else:
 
-            new_inf(id, data.decode('utf-8'))
+            new_inf(id, data)
             print('Received: ', data)
 
             if len(dict.get(id)) != 0 :

@@ -52,44 +52,46 @@ def first_connection():
     id = str(data)
     s.close()
 
-def receive_info():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def ask_for_info(s):
+
     global id
-    s.connect(('127.0.0.1', 12345))
     data = bytes(id + "| "'receive' + "|", 'utf-8')
     s.send(data)
+    receive_info(s)
 
+
+def receive_info(s):
     data = s.recv(1024)
-    if (len(data) ==0):
+    if (len(data) == 0):
         return
     splited = data.decode('utf-8').split("|")
     num, flag, path, other = splited[0][2:-1], splited[1], splited[2], splited[3]
 
-    if(flag == "created"):
-        need_created(path,other)
-    if(flag == "delete"):
+    if (flag == "created"):
+        need_created(path, other)
+    if (flag == "delete"):
         need_delete(path)
-    if(flag == "modified"):
-        need_modify(path,other)
-    if(flag == "move"):
-        need_move(path,other)
+    if (flag == "modified"):
+        need_modify(path, other)
+    if (flag == "move"):
+        need_move(path, other)
 
-
-    s.close()
-
-
-def push(path, flag, new_path):
+def push(src_path, flag, new_path):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
 
+    from os import path
+    if not path.isfile(src_path):
+        return
+
     delimiter_byte = bytes(("|"), "utf-8")
 
-    protocol = id + "|" + flag + "|" + path
+    protocol = id + "|" + flag + "|" + src_path
     protocols_bytes = bytes((str(protocol)), "utf-8")
 
     if flag == "created":
-        f = open(path, 'rb')
+        f = open(src_path, 'rb')
         l = f.read()
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
@@ -97,7 +99,7 @@ def push(path, flag, new_path):
         pass
 
     if flag == "modified":
-        f = open(path, 'rb')
+        f = open(src_path, 'rb')
         l = f.read()
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
@@ -106,6 +108,7 @@ def push(path, flag, new_path):
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
 
     s.send(protocols_bytes)
+    receive_info(s)
     s.close()
 
 
@@ -188,7 +191,11 @@ if __name__ == "__main__":
     try:
         while True:
             ###############
-            receive_info()
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            s.connect(('127.0.0.1', 12345))
+            ask_for_info(s)
+            s.close()
 
             # apply changes
             ###############
