@@ -12,45 +12,49 @@ import time
 import logging
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
+from os import path
+
+just_updated = False
+port_number= 12346
 
 id = ""
 
 
 def need_delete(path):
-    #os.remove(path)
+    os.remove(path)
     print("deleted:" + path)
 
 
 def need_move(src_path, dest_path):
-    #os.replace(src_path, dest_path)
+    os.replace(src_path, dest_path)
     print("moved from:" + src_path + "to" + dest_path)
 
 
 def need_created(path, data):
-    # f = open(path, 'wb')
-    # f.write(data)
-    # f.close()
-    print("moved from:creater" )
+    f = open(path, 'wb')
+    f.write(data)
+    f.close()
+    print("file created")
 
 
 def need_modify(path, data):
-    #os.remove(path)
-    # f = open('path', 'wb')
-    # f.write(data)
-    # f.close()
-    print("moved from: modify")
+    f = open('path', 'wb')
+    f.write(data)
+    f.close()
+    print("file modify")
 
 
 def first_connection():
     global id
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', 12345))
+    s.connect(('127.0.0.1', port_number))
     data = bytes('new connection', 'utf-8')
     s.send(data)
     data = s.recv(1024)
     print("my id: ", data)
     id = str(data)[2:]
     s.close()
+
 
 # def ask_for_info(s):
 #
@@ -61,34 +65,46 @@ def first_connection():
 
 
 def receive_info(s):
+    global just_updated
     data = s.recv(1024)
     if (len(data) == 0):
         return
+    just_updated = True
     splited = data.decode('utf-8').split("|")
-    num, flag, path, other = splited[0][2:-1], splited[1], splited[2], splited[3]
+    num, flag, path = splited[0][:-1], splited[1], sys.argv[1]+splited[2]
+    other=None
+    if (flag != "deleted"):
+        other = bytes(splited[3],'utf-8')
 
     if (flag == "created"):
         need_created(path, other)
-    if (flag == "delete"):
+    if (flag == "deleted"):
         need_delete(path)
     if (flag == "modified"):
         need_modify(path, other)
-    if (flag == "move"):
-        need_move(path, other)
+    if (flag == "moved"):
+        need_move(path, sys.argv[1]+other)
+
 
 def add_change(src_path, flag, new_path):
 
     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
+    send_src_path = src_path[(len(sys.argv[1])):]
+    if new_path is not None:
+        send_new_path = new_path[(len(sys.argv[1])):]
 
-    from os import path
-    if not path.isfile(src_path):
+    if flag == "modified" and not path.isfile(src_path):
         return
 
+    global just_updated
+    if just_updated:
+        just_updated=False
+        return
     delimiter_byte = bytes(("|"), "utf-8")
 
-    protocol = id + "|" + flag + "|" + src_path
+    protocol = id + "|" + flag + "|" + send_src_path
     protocols_bytes = bytes((str(protocol)), "utf-8")
 
     if flag == "created":
@@ -96,7 +112,7 @@ def add_change(src_path, flag, new_path):
         l = f.read()
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
-    if flag == "delete":
+    if flag == "deleted":
         pass
 
     if flag == "modified":
@@ -105,14 +121,13 @@ def add_change(src_path, flag, new_path):
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
     if flag == "move":
-        new_path_bytes = bytes((str(new_path)), "utf-8")
+        new_path_bytes = bytes((str(send_new_path)), "utf-8")
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
 
     changes.append(protocols_bytes)
     # s.send(protocols_bytes)
     # receive_info(s)
     # s.close()
-
 
 
 def on_created(event):
@@ -171,12 +186,12 @@ def on_moved(event):
     #   received new file name and path
     #   change file location;lk
 
-    print(f"ok ok ok, someone moved {event.src_path} to {event.dest_path}")
+    print(f"ok ok ok, someone  yoavyoav moved {event.src_path} to {event.dest_path}")
 
 
 def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', 12345))
+    s.connect(('127.0.0.1', port_number))
     if changes:
         data = changes.pop(0)
     else:
@@ -184,6 +199,7 @@ def connect():
     s.send(data)
     receive_info(s)
     s.close()
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
@@ -204,13 +220,8 @@ if __name__ == "__main__":
     changes = []
     try:
         while True:
-            ###############
-
             connect()
 
-
-            # apply changes
-            ###############
             time.sleep(1)
     finally:
         observer.stop()
