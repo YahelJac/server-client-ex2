@@ -30,7 +30,7 @@ def need_created(path, data):
     # f = open(path, 'wb')
     # f.write(data)
     # f.close()
-    print("creater from" + path)
+    print("moved from:creater" )
 
 
 def need_modify(path, data):
@@ -49,17 +49,15 @@ def first_connection():
     s.send(data)
     data = s.recv(1024)
     print("my id: ", data)
-    id = str(data)
+    id = str(data)[2:]
     s.close()
 
-def ask_for_info(s):
-
-    global id
-    data = bytes(id + "| "'receive' + "|", 'utf-8')
-    if len(data) == 0:
-        pass
-    s.send(data)
-    receive_info(s)
+# def ask_for_info(s):
+#
+#     global id
+#     data = bytes(id + "|receive" + "|", 'utf-8')
+#     s.send(data)
+#     receive_info(s)
 
 
 def receive_info(s):
@@ -78,9 +76,10 @@ def receive_info(s):
     if (flag == "move"):
         need_move(path, other)
 
-def push(src_path, flag, new_path):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', 12345))
+def add_change(src_path, flag, new_path):
+
+    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
 
     from os import path
@@ -109,15 +108,15 @@ def push(src_path, flag, new_path):
         new_path_bytes = bytes((str(new_path)), "utf-8")
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
 
-    if len(protocols_bytes) == 0:
-        pass
-    s.send(protocols_bytes)
-    receive_info(s)
-    s.close()
+    changes.append(protocols_bytes)
+    # s.send(protocols_bytes)
+    # receive_info(s)
+    # s.close()
+
 
 
 def on_created(event):
-    push(event.src_path, event.event_type, None)
+    add_change(event.src_path, event.event_type, None)
     # push:
     #   notify create
     #   send file name and path
@@ -131,7 +130,7 @@ def on_created(event):
 
 
 def on_deleted(event):
-    push(event.src_path, event.event_type, None)
+    add_change(event.src_path, event.event_type, None)
 
     # push:
     #   notify delete
@@ -144,7 +143,7 @@ def on_deleted(event):
 
 
 def on_modified(event):
-    push(event.src_path, event.event_type, None)
+    add_change(event.src_path, event.event_type, None)
 
     # push:
     #   notify modify
@@ -160,7 +159,7 @@ def on_modified(event):
 
 
 def on_moved(event):
-    push(event.src_path, event.event_type, event.dest_path)
+    add_change(event.src_path, event.event_type, event.dest_path)
 
     # push:
     #   notify move
@@ -175,12 +174,22 @@ def on_moved(event):
     print(f"ok ok ok, someone moved {event.src_path} to {event.dest_path}")
 
 
-if __name__ == "__main__":
+def connect():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('127.0.0.1', 12345))
+    if changes:
+        data = changes.pop(0)
+    else:
+        data = bytes(id + "|receive" + "|", 'utf-8')
+    s.send(data)
+    receive_info(s)
+    s.close()
 
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
-    path = sys.argv[1] if len(sys.argv) > 1 else '.'
+    tracking_path = sys.argv[1] if len(sys.argv) > 1 else '.'
     my_event_handler = LoggingEventHandler()
 
     my_event_handler.on_created = on_created
@@ -189,17 +198,16 @@ if __name__ == "__main__":
     my_event_handler.on_moved = on_moved
 
     observer = Observer()
-    observer.schedule(my_event_handler, path, recursive=True)
+    observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
     first_connection()
+    changes = []
     try:
         while True:
             ###############
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            s.connect(('127.0.0.1', 12345))
-            ask_for_info(s)
-            s.close()
+            connect()
+
 
             # apply changes
             ###############

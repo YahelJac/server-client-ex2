@@ -36,10 +36,6 @@ while True:
         if temp == b'' or len(temp)<1024:
             break
 
-
-    if len(data) == 0 :
-        client_socket.close()
-        break
     #data = client_socket.recv(100)
     if data == b'new connection':
         pass
@@ -48,17 +44,18 @@ while True:
         client_socket.send(bytes(id, "utf-8"))
     else:
         splited = data.decode('utf-8').split("|")
-        id= splited[0][2:-1]
-        flag= splited[1]
-        if(len(splited) == 2):
+        try:
+            id= splited[0][2:-1]
+            flag= splited[1]
+            path = splited[2]
+            list = dict.get(id)
+        except:
             pass
-        path = splited[2]
-        list = dict.get(id)
 
         #if want only info
-        if flag == " receive":
-            if len(dict.get(id)) != 0:
-                value = list.pop(0)
+        if flag == "receive":
+            if dict.get(id) is not None and len(dict.get(id)) != 0:
+                value = dict.get(id).pop(0)
                 client_socket.send(value)
 
 
@@ -68,10 +65,9 @@ while True:
             new_inf(id, data)
             print('Received: ', data)
 
-            if len(dict.get(id)) != 0 :
-
+            if dict.get(id) is not None and len(dict.get(id)) != 0:
                 value = dict.get(id).pop(0)
-                client_socket.send(bytes(value, "utf-8"))
+                client_socket.send(value)
 
 
 
