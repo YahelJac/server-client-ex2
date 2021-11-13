@@ -37,7 +37,9 @@ while True:
             break
 
 
-
+    if len(data) == 0 :
+        client_socket.close()
+        break
     #data = client_socket.recv(100)
     if data == b'new connection':
         pass

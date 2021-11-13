@@ -30,7 +30,7 @@ def need_created(path, data):
     # f = open(path, 'wb')
     # f.write(data)
     # f.close()
-    print("moved from:creater" )
+    print("creater from" + path)
 
 
 def need_modify(path, data):
@@ -56,6 +56,8 @@ def ask_for_info(s):
 
     global id
     data = bytes(id + "| "'receive' + "|", 'utf-8')
+    if len(data) == 0:
+        pass
     s.send(data)
     receive_info(s)
 
@@ -107,6 +109,8 @@ def push(src_path, flag, new_path):
         new_path_bytes = bytes((str(new_path)), "utf-8")
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
 
+    if len(protocols_bytes) == 0:
+        pass
     s.send(protocols_bytes)
     receive_info(s)
     s.close()
