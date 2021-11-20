@@ -2,14 +2,15 @@ import os
 import socket
 import random
 import string
+import utils
 
-port_number = 12347
+port_number = 12345
 
 
 
 # new file that need to be saved
 def new_connect():
-    #id = id_generator()
+    id = id_generator()
     id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
     # how many members the file have
     num_of_members = 1
@@ -44,11 +45,6 @@ def receive_new_connect(client_socket, id):
     f = open(id + ".zip",'wb')
     f.write(dir)
     f.close()
-
-    # owd = str(os.getcwd())
-    # str2 = "bash -c 'unzip -q " + owd+"/"+id + ".zip '"
-    # owd = os.getcwd()
-    # os.chdir()
     str2 = "bash -c 'unzip -q " + id + ".zip -d "+id +"'"
     os.system(str2)
     os.remove(id+".zip")
@@ -95,7 +91,7 @@ if __name__ == '__main__':
             client_socket.send(bytes(id, "utf-8"))
 
             # create folder
-            receive_new_connect(client_socket, id)
+            utils.download_dir(client_socket, id)
             # dir = bytes('', 'utf-8')
             # while len(dir) < 10000000:
             #     temp = client_socket.recv(1024)
