@@ -15,9 +15,12 @@ from watchdog.events import LoggingEventHandler
 from os import path
 
 just_updated = False
-port_number= 12346
+port_number = int(sys.argv[2])
+file_path = sys.argv[3]
+ip = sys.argv[1]
 
 id = ""
+internal_id = ""
 
 
 def need_delete(path):
@@ -46,14 +49,30 @@ def need_modify(path, data):
 
 def first_connection():
     global id
+    global internal_id
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', port_number))
+    s.connect((ip, port_number))
     data = bytes('new connection', 'utf-8')
     s.send(data)
     data = s.recv(1024)
     print("my id: ", data)
     id = str(data)[2:]
+    internal_id = "1"
+
     s.close()
+
+
+def connecting_user(id):
+    global internal_id
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((ip, port_number))
+    data = bytes(str(id) + "|" + "temp" + "|connecting user" + "|", 'utf-8')
+    s.send(data)
+    data = s.recv(1024)
+    print("my internal id: ", data)
+    internal_id = str(data)[2:]
+    s.close()
+
 
 
 # def ask_for_info(s):
@@ -71,10 +90,10 @@ def receive_info(s):
         return
     just_updated = True
     splited = data.decode('utf-8').split("|")
-    num, flag, path = splited[0][:-1], splited[1], sys.argv[1]+splited[2]
-    other=None
+    num, flag, path = splited[0][:-1], splited[2], file_path + splited[3]
+    other = None
     if (flag != "deleted"):
-        other = bytes(splited[3],'utf-8')
+        other = bytes(splited[3], 'utf-8')
 
     if (flag == "created"):
         need_created(path, other)
@@ -83,28 +102,27 @@ def receive_info(s):
     if (flag == "modified"):
         need_modify(path, other)
     if (flag == "moved"):
-        need_move(path, sys.argv[1]+other)
+        need_move(path, sys.argv[1] + other)
 
 
 def add_change(src_path, flag, new_path):
-
     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
-    send_src_path = src_path[(len(sys.argv[1])):]
+    send_src_path = src_path[(len(file_path)):]
     if new_path is not None:
-        send_new_path = new_path[(len(sys.argv[1])):]
+        send_new_path = new_path[(len(file_path)):]
 
     if flag == "modified" and not path.isfile(src_path):
         return
 
     global just_updated
     if just_updated:
-        just_updated=False
+        just_updated = False
         return
     delimiter_byte = bytes(("|"), "utf-8")
 
-    protocol = id + "|" + flag + "|" + send_src_path
+    protocol = id + "|" + internal_id + "|" + flag + "|" + send_src_path
     protocols_bytes = bytes((str(protocol)), "utf-8")
 
     if flag == "created":
@@ -191,11 +209,11 @@ def on_moved(event):
 
 def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', port_number))
+    s.connect((ip, port_number))
     if changes:
         data = changes.pop(0)
     else:
-        data = bytes(id + "|receive" + "|", 'utf-8')
+        data = bytes(str(id) + "|" + internal_id + "|receive" + "|", 'utf-8')
     s.send(data)
     receive_info(s)
     s.close()
@@ -205,7 +223,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
-    tracking_path = sys.argv[1] if len(sys.argv) > 1 else '.'
+    tracking_path = file_path if len(sys.argv) > 1 else '.'
     my_event_handler = LoggingEventHandler()
 
     my_event_handler.on_created = on_created
@@ -216,13 +234,20 @@ if __name__ == "__main__":
     observer = Observer()
     observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
-    first_connection()
+    time_to_sleep = int(sys.argv[4])
+    temp = len(sys.argv)
+    if len(sys.argv) == 6:
+        connecting_user(sys.argv[5])
+        id = sys.argv[5]
+    else:
+        first_connection()
+
     changes = []
     try:
         while True:
             connect()
 
-            time.sleep(1)
+            time.sleep(time_to_sleep)
     finally:
         observer.stop()
         observer.join()

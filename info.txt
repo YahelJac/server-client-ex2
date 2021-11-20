@@ -1,0 +1,11 @@
+new client get a new dict
+0. i - how many members share the file
+1. the first user
+
+check for every sys.argv what's inside:
+1. ip
+2. port
+3. path
+4. how much time to sleep
+5. id
+
