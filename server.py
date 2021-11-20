@@ -1,8 +1,10 @@
+import os
 import socket
 import random
 import string
 
-port_number = 12345
+port_number = 12347
+
 
 
 # new file that need to be saved
@@ -17,7 +19,6 @@ def new_connect():
 
     dict[id] = id_dict
     # todo - check what the function need to upload a file
-    receive_new_connect()
 
     return id
 
@@ -31,8 +32,27 @@ def connecting_user(id):
 
 
 # same as client
-def receive_new_connect():
-    pass
+def receive_new_connect(client_socket, id):
+    dir = bytes('', 'utf-8')
+    while len(dir) < 10000000:
+        temp = client_socket.recv(1024)
+        dir = dir + temp
+        if temp == b'' or len(temp) < 1024:
+            break
+
+    os.mkdir(id)
+    f = open(id + ".zip",'wb')
+    f.write(dir)
+    f.close()
+
+    # owd = str(os.getcwd())
+    # str2 = "bash -c 'unzip -q " + owd+"/"+id + ".zip '"
+    # owd = os.getcwd()
+    # os.chdir()
+    str2 = "bash -c 'unzip -q " + id + ".zip -d "+id +"'"
+    os.system(str2)
+    os.remove(id+".zip")
+
 
 
 # same as client
@@ -63,7 +83,7 @@ if __name__ == '__main__':
         print('Connection from: ', client_address)
         data = bytes('', 'utf-8')
         # getting info
-        while len(data) < 100000:
+        while len(data) < 10000000:
             temp = client_socket.recv(1024)
             data = data + temp
             if temp == b'' or len(temp) < 1024:
@@ -73,6 +93,18 @@ if __name__ == '__main__':
             id = new_connect()
             print(id)
             client_socket.send(bytes(id, "utf-8"))
+
+            # create folder
+            receive_new_connect(client_socket, id)
+            # dir = bytes('', 'utf-8')
+            # while len(dir) < 10000000:
+            #     temp = client_socket.recv(1024)
+            #     dir = dir + temp
+            #     if temp == b'' or len(temp) < 1024:
+            #         break
+
+
+
 
         else:
             splited = data.decode('utf-8').split("|")

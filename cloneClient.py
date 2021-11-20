@@ -220,6 +220,15 @@ def connect():
 
 
 if __name__ == "__main__":
+
+    if len(sys.argv) == 6:
+        connecting_user(sys.argv[5])
+        id = sys.argv[5]
+    else:
+        first_connection()
+
+
+
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
@@ -235,12 +244,7 @@ if __name__ == "__main__":
     observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
     time_to_sleep = int(sys.argv[4])
-    temp = len(sys.argv)
-    if len(sys.argv) == 6:
-        connecting_user(sys.argv[5])
-        id = sys.argv[5]
-    else:
-        first_connection()
+
 
     changes = []
     try:

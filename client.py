@@ -16,7 +16,7 @@ from os import path
 
 just_updated = False
 port_number = int(sys.argv[2])
-file_path = sys.argv[3]
+dir_path = sys.argv[3]
 ip = sys.argv[1]
 
 id = ""
@@ -56,10 +56,30 @@ def first_connection():
     s.send(data)
     data = s.recv(1024)
     print("my id: ", data)
-    id = str(data)[2:]
+    id = str(data)[2:-1]
     internal_id = "1"
-
+    ###################################
+    #save to zip
+    owd = os.getcwd()
+    os.chdir(dir_path)
+    str2 = "bash -c 'zip -q -r " + id + ".zip " + "./*" + "'"
+    os.system(str2)
+    f = open(id+".zip", 'rb')
+    l = f.read()
+    f.close()
+    time.sleep(2)
+    os.remove(id+".zip")
+    os.chdir(owd)
+    s.send(l)
     s.close()
+
+
+
+
+
+    ###################################
+
+
 
 
 def connecting_user(id):
@@ -90,18 +110,22 @@ def receive_info(s):
         return
     just_updated = True
     splited = data.decode('utf-8').split("|")
-    num, flag, path = splited[0][:-1], splited[1], file_path + splited[2]
+    num, flag, path = splited[0][:-1], splited[1], dir_path + splited[2]
     other = None
     if (flag != "deleted"):
         other = bytes(splited[3], 'utf-8')
 
     if (flag == "created"):
+        return
         need_created(path, other)
     if (flag == "deleted"):
+        return
         need_delete(path)
     if (flag == "modified"):
+        return
         need_modify(path, other)
     if (flag == "moved"):
+        return
         need_move(path, sys.argv[1] + other)
 
 
@@ -109,9 +133,9 @@ def add_change(src_path, flag, new_path):
     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
-    send_src_path = src_path[(len(file_path)):]
+    send_src_path = src_path[(len(dir_path)):]
     if new_path is not None:
-        send_new_path = new_path[(len(file_path)):]
+        send_new_path = new_path[(len(dir_path)):]
 
     if flag == "modified" and not path.isfile(src_path):
         return
@@ -128,6 +152,7 @@ def add_change(src_path, flag, new_path):
     if flag == "created":
         f = open(src_path, 'rb')
         l = f.read()
+        f.close()
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
     if flag == "deleted":
@@ -220,10 +245,19 @@ def connect():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 6:
+        connecting_user(sys.argv[5])
+        id = sys.argv[5]
+    else:
+        first_connection()
+
+    changes = []
+
+
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
-    tracking_path = file_path if len(sys.argv) > 1 else '.'
+    tracking_path = dir_path if len(sys.argv) > 1 else '.'
     my_event_handler = LoggingEventHandler()
 
     my_event_handler.on_created = on_created
@@ -235,14 +269,7 @@ if __name__ == "__main__":
     observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
     time_to_sleep = int(sys.argv[4])
-    temp = len(sys.argv)
-    if len(sys.argv) == 6:
-        connecting_user(sys.argv[5])
-        id = sys.argv[5]
-    else:
-        first_connection()
 
-    changes = []
     try:
         while True:
             connect()
