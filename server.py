@@ -1,6 +1,7 @@
 import socket
 import random
 import string
+port_number= 12346
 
 def new_connect():
     id = id_generator()
@@ -21,7 +22,7 @@ def id_generator():
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 12345))
+server.bind(('', port_number))
 server.listen(5)
 
 dict = {}
@@ -45,7 +46,7 @@ while True:
     else:
         splited = data.decode('utf-8').split("|")
         try:
-            id= splited[0][2:-1]
+            id= splited[0][:-1]
             flag= splited[1]
             path = splited[2]
             list = dict.get(id)
