@@ -7,15 +7,14 @@ import utils
 port_number = 12345
 
 
-
 # new file that need to be saved
 def new_connect():
     id = id_generator()
     id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
     # how many members the file have
     num_of_members = 1
-    id_dict={}
-    id_dict[0]=  num_of_members
+    id_dict = {}
+    id_dict[0] = num_of_members
     id_dict[1] = []
 
     dict[id] = id_dict
@@ -42,13 +41,12 @@ def receive_new_connect(client_socket, id):
             break
 
     os.mkdir(id)
-    f = open(id + ".zip",'wb')
+    f = open(id + ".zip", 'wb')
     f.write(dir)
     f.close()
-    str2 = "bash -c 'unzip -q " + id + ".zip -d "+id +"'"
+    str2 = "bash -c 'unzip -q " + id + ".zip -d " + id + "'"
     os.system(str2)
-    os.remove(id+".zip")
-
+    os.remove(id + ".zip")
 
 
 # same as client
@@ -89,9 +87,9 @@ if __name__ == '__main__':
             id = new_connect()
             print(id)
             client_socket.send(bytes(id, "utf-8"))
-
+            os.mkdir("./"+id)
             # create folder
-            utils.download_dir(client_socket, id)
+            # utils.download_dir(client_socket, id)
             # dir = bytes('', 'utf-8')
             # while len(dir) < 10000000:
             #     temp = client_socket.recv(1024)
@@ -123,6 +121,7 @@ if __name__ == '__main__':
 
             # if want only info
             elif flag == "receive":
+
                 internal_id = int(internal_id)
                 if dict[id][int(internal_id)] is not None and len(dict[id][int(internal_id)]) != 0:
                     value = dict[id][int(internal_id)].pop(0)
@@ -134,7 +133,7 @@ if __name__ == '__main__':
 
                 new_inf(id, internal_id, data)
                 print('Received: ', data)
-
+                utils.receive_info(data, "./" + id)
                 if dict[id][int(internal_id)] is not None and len(dict[id][int(internal_id)]) != 0:
                     value = dict[id][int(internal_id)].pop(0)
                     client_socket.send(value)
