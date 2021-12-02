@@ -40,22 +40,22 @@ def receive_info(data, dir_path):
         return
 
     splited = data.decode('utf-8').split("|")
-    num, flag, path = splited[0][:-1], splited[2], dir_path + splited[3]
+    num, flag, path = splited[0][:-1], splited[2], os.path.join(dir_path,splited[3])
     other = None
-    if (flag != "deleted" and flag != "created" ):
-        other = bytes(splited[3], 'utf-8')
-    if (flag == "created"):
+    if (flag == "created" ):
         try:
             other = bytes(splited[4], 'utf-8')
         except:
             pass
         need_created(path, other)
-    if (flag == "deleted"):
+    elif (flag == "deleted"):
         need_delete(path)
-    # if (flag == "modified"):
-    #     need_modify(path, other)
-    if (flag == "moved"):
-        need_move(path, dir_path + splited[4])
+    elif (flag == "modified"):
+        other = bytes(splited[4], 'utf-8')
+        need_modify(path, other)
+    elif (flag == "moved"):
+        other = bytes(splited[3], 'utf-8')
+        need_move(path, os.path.join(dir_path, splited[4]))
 
 
 
@@ -81,6 +81,7 @@ def need_created(path, data):
 
 
 def need_modify(path, data):
+    os.remove(path)
     f = open('path', 'wb')
     f.write(data)
     f.close()

@@ -25,34 +25,6 @@ observer = Observer()
 id = ""
 internal_id = ""
 
-#
-# def need_delete(path):
-#     os.remove(path)
-#     print("deleted:" + path)
-#
-#
-# def need_move(src_path, dest_path):
-#     os.replace(src_path, dest_path)
-#     print("moved from:" + src_path + "to" + dest_path)
-#
-#
-# def need_created(path, data):
-#     if data is None:
-#         os.mkdir(path)
-#         print("dir created")
-#     else:
-#         f = open(path, 'wb')
-#         f.write(data)
-#         f.close()
-#         print("file created")
-#
-#
-# def need_modify(path, data):
-#     f = open('path', 'wb')
-#     f.write(data)
-#     f.close()
-#     print("file modify")
-#
 
 def first_connection():
     global id
@@ -98,17 +70,6 @@ def connecting_user(id):
     print("my internal id: ", data)
     internal_id = str(data)[2:]
     s.close()
-
-
-
-# def ask_for_info(s):
-#
-#     global id
-#     data = bytes(id + "|receive" + "|", 'utf-8')
-#     s.send(data)
-#     receive_info(s)
-
-
 
 
 def receive_info(s):
@@ -183,6 +144,8 @@ def on_created(event):
 
 def on_deleted(event):
     add_change(event.src_path, event.event_type, None)
+    print(f"hey, {event.src_path} has been deleted!")
+
 
 
     print(f"what the f**k! Someone deleted {event.src_path}!")
