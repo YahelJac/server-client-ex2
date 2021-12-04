@@ -4,7 +4,7 @@ import random
 import string
 import utils
 
-port_number = 12349
+port_number = 12347
 
 
 # new file that need to be saved

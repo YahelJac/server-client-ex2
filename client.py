@@ -92,8 +92,9 @@ def add_change(src_path, flag, new_path):
     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # s.connect(('127.0.0.1', 12345))
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
-    send_src_path = src_path[(len(dir_path)):]
+    send_src_path = src_path[(len(dir_path)) + 1:]
     if new_path is not None:
+        #todo add plus 1 maybe
         send_new_path = new_path[(len(dir_path)):]
 
     if flag == "modified" and not path.isfile(src_path):

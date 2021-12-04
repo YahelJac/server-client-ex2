@@ -82,7 +82,9 @@ def need_created(path, data):
 
 def need_modify(path, data):
     os.remove(path)
-    f = open('path', 'wb')
+    f = open(path, 'wb')
+    f.close()
+    f = open(path, 'wb')
     f.write(data)
     f.close()
     print("file modify")
