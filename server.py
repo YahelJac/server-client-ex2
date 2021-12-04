@@ -4,7 +4,7 @@ import random
 import string
 import utils
 
-port_number = 12346
+port_number = 12345
 
 
 # new file that need to be saved
@@ -18,7 +18,6 @@ def new_connect():
     id_dict[1] = []
 
     dict[id] = id_dict
-    # todo - check what the function need to upload a file
 
     return id
 
@@ -27,7 +26,8 @@ def new_connect():
 def connecting_user(id):
     dict[id][0] = dict[id][0] + 1
     dict[id][dict[id][0]] = []
-    send_to_new_user(id)
+    internal_id = dict[id][0]
+    send_to_new_user(id,internal_id)
     return dict[id][0]
 
 
@@ -50,8 +50,17 @@ def receive_new_connect(client_socket, id):
 
 
 # same as client
-def send_to_new_user(id):
-    pass
+def send_to_new_user(id, internal_id):
+    dir_path = './' + id
+    list_of_files = utils.from_dir_to_list(dir_path)
+    list_of_packets = []
+    for file in list_of_files:
+        packet = utils.add_change(os.path.join(dir_path,file),'created' ,None, dir_path,id, internal_id)
+        if packet:
+            dict[id][internal_id].append(packet)
+
+
+
 
 
 def new_inf(id, internal_id, data):
