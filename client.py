@@ -94,8 +94,7 @@ def add_change(src_path, flag, new_path):
     # protocol = |id|flag|path|new_path(?)|binaryfile(?)
     send_src_path = src_path[(len(dir_path)) + 1:]
     if new_path is not None:
-        #todo add plus 1 maybe
-        send_new_path = new_path[(len(dir_path)):]
+        send_new_path = new_path[(len(dir_path)) + 1:]
 
     if flag == "modified" and not path.isfile(src_path):
         return False
