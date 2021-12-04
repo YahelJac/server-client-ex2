@@ -14,7 +14,7 @@ ip = sys.argv[1]
 observer = Observer()
 id = ""
 internal_id = ""
-stop2 = False
+stop = False
 
 
 def first_connection():
@@ -44,14 +44,12 @@ def connecting_user(id):
 
 
 def receive_info(s):
-    global just_updated
-    global stop2
+    global stop
     data = s.recv(1024)
     if (len(data) == 0):
         return
 
     stop = True
-    just_updated = True
     utils.receive_info(data, dir_path)
     stop = False
 
@@ -62,7 +60,7 @@ def activate_change(src_path, flag, new_path):
         changes.append(res)
 
 def on_created(event):
-    if stop2:
+    if stop:
         return
     activate_change(event.src_path, event.event_type, None)
 
@@ -70,7 +68,7 @@ def on_created(event):
 
 
 def on_deleted(event):
-    if stop2:
+    if stop:
         return
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
@@ -79,7 +77,7 @@ def on_deleted(event):
 
 
 def on_modified(event):
-    if stop2:
+    if stop:
         return
     if isinstance(event, DirModifiedEvent):
         return
@@ -90,7 +88,7 @@ def on_modified(event):
 
 
 def on_moved(event):
-    if stop2:
+    if stop:
         return
     activate_change(event.src_path, event.event_type, event.dest_path)
 

@@ -12,11 +12,13 @@ def receive_info(data, dir_path):
     num, flag, path = splited[0][:-1], splited[2], os.path.join(dir_path, splited[3])
     other = None
     if (flag == "created"):
+        is_file = False
         try:
             other = bytes(splited[4], 'utf-8')
+            is_file = True
         except:
             pass
-        need_created(path, other)
+        need_created(path, other,is_file)
     elif (flag == "deleted"):
         need_delete(path)
     elif (flag == "modified"):
@@ -37,9 +39,8 @@ def need_move(src_path, dest_path):
     print("moved from:" + src_path + "to" + dest_path)
 
 
-def need_created(path, data):
-    if data is None:
-
+def need_created(path, data,is_file):
+    if not is_file:
         os.mkdir(path)
         print("dir created")
     else:

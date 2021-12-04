@@ -44,14 +44,13 @@ def connecting_user(id):
 
 
 def receive_info(s):
-    global just_updated
     global stop
     data = s.recv(1024)
     if (len(data) == 0):
         return
 
     stop = True
-    just_updated = True
+    time.sleep(0.1)
     utils.receive_info(data, dir_path)
     stop = False
 
