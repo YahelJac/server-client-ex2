@@ -25,8 +25,8 @@ def first_connection():
     data = bytes('new connection', 'utf-8')
     s.send(data)
     data = s.recv(1024)
+    print(data.decode('utf-8'))
     id = str(data)[2:-1]
-    print(id)
     internal_id = "1"
     s.close()
 
@@ -50,8 +50,9 @@ def receive_info(s):
         return
 
     stop = True
-    time.sleep(0.1)
+
     utils.receive_info(data, dir_path)
+    time.sleep(0.1)
     stop = False
 
 
@@ -63,6 +64,7 @@ def activate_change(src_path, flag, new_path):
 def on_created(event):
     if stop:
         return
+    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
 
     print(f"hey, {event.src_path} has been created!")
@@ -71,6 +73,7 @@ def on_created(event):
 def on_deleted(event):
     if stop:
         return
+    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
 
@@ -78,11 +81,12 @@ def on_deleted(event):
 
 
 def on_modified(event):
+
     if stop:
         return
     if isinstance(event, DirModifiedEvent):
         return
-
+    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
 
     print(f"hey buddy, {event.src_path} has been modified")
@@ -91,6 +95,7 @@ def on_modified(event):
 def on_moved(event):
     if stop:
         return
+    time.sleep(1)
     activate_change(event.src_path, event.event_type, event.dest_path)
 
     print(f"ok ok ok, someone  yoavyoav moved {event.src_path} to {event.dest_path}")

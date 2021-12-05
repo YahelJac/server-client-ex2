@@ -12,7 +12,7 @@ port_number = int(sys.argv[1])
 # new file that need to be saved
 def new_connect():
     id = id_generator()
-    # id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
+    #id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
     # how many members the file have
     num_of_members = 1
     id_dict = {}
@@ -33,22 +33,22 @@ def connecting_user(id):
     return dict[id][0]
 
 
-# same as client
-def receive_new_connect(client_socket, id):
-    dir = bytes('', 'utf-8')
-    while len(dir) < 10000000:
-        temp = client_socket.recv(1024)
-        dir = dir + temp
-        if temp == b'' or len(temp) < 1024:
-            break
-
-    os.mkdir(id)
-    f = open(id + ".zip", 'wb')
-    f.write(dir)
-    f.close()
-    str2 = "bash -c 'unzip -q " + id + ".zip -d " + id + "'"
-    os.system(str2)
-    os.remove(id + ".zip")
+# # same as client
+# def receive_new_connect(client_socket, id):
+#     dir = bytes('', 'utf-8')
+#     while len(dir) < 10000000:
+#         temp = client_socket.recv(1024)
+#         dir = dir + temp
+#         if temp == b'' or len(temp) < 1024:
+#             break
+#
+#     os.mkdir(id)
+#     f = open(id + ".zip", 'wb')
+#     f.write(dir)
+#     f.close()
+#     str2 = "bash -c 'unzip -q " + id + ".zip -d " + id + "'"
+#     os.system(str2)
+#     os.remove(id + ".zip")
 
 
 # same as client
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         print('Connection from: ', client_address)
         data = bytes('', 'utf-8')
         # getting info
-        while len(data) < 10000000:
+        while True:
             temp = client_socket.recv(1024)
             data = data + temp
             if temp == b'' or len(temp) < 1024:
@@ -112,15 +112,16 @@ if __name__ == '__main__':
 
 
         else:
-            splited = data.decode('utf-8').split("|")
+            splited = data.split(b'|')
+
             try:
 
-                id = splited[0].strip("\'")
+                id = splited[0].decode('utf-8').strip("\'")
 
-                internal_id = splited[1].strip("'")
+                internal_id = splited[1].decode('utf-8').strip("'")
 
-                flag = splited[2]
-                path = splited[3]
+                flag = splited[2].decode('utf-8')
+                path = splited[3].decode('utf-8')
                 list = dict.get(id)
             except:
                 pass
