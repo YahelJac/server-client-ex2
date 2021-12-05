@@ -124,7 +124,7 @@ if __name__ == '__main__':
                 path = splited[3].decode('utf-8')
                 list = dict.get(id)
             except:
-                pass
+                print("ho")
 
             # if new user wants to connect
             if flag == "connecting user":

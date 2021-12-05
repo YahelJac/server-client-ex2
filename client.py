@@ -45,7 +45,11 @@ def connecting_user(id):
 
 def receive_info(s):
     global stop
-    data = s.recv(1024)
+    try:
+        data = s.recv(1024)
+    except:
+        return
+
     if (len(data) == 0):
         return
 
@@ -132,7 +136,7 @@ if __name__ == "__main__":
     my_event_handler.on_modified = on_modified
     my_event_handler.on_moved = on_moved
 
-    observer = Observer()
+    observer = Observer(timeout=0.5)
     observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
     time_to_sleep = int(sys.argv[4])
