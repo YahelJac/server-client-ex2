@@ -25,8 +25,8 @@ def first_connection():
     data = bytes('new connection', 'utf-8')
     s.send(data)
     data = s.recv(1024)
-    print("my id: ", data)
     id = str(data)[2:-1]
+    print(id)
     internal_id = "1"
     s.close()
 

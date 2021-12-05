@@ -2,15 +2,17 @@ import os
 import socket
 import random
 import string
+import sys
+
 import utils
 
-port_number = 12346
+port_number = int(sys.argv[1])
 
 
 # new file that need to be saved
 def new_connect():
     id = id_generator()
-    id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
+    # id = "nrIFfGn8dKvPpoFRCxwgvV4y9gZewMDbCFfKonyM7YubZHi33YFdW6xEcTM0eD5X1zZLvKacdJxCljbxs4XsQEBvwALvk8G053UipzIg40RPLPKjpqQ6svmUxckNLLP0"
     # how many members the file have
     num_of_members = 1
     id_dict = {}
