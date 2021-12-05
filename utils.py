@@ -89,22 +89,38 @@ def add_change(src_path, flag, new_path,dir_path,id,internal_id):
         if os.path.isdir(src_path):
             pass
         else:
-
+            until_wait(src_path)
             f = open(src_path, 'rb')
             l = f.read()
             f.close()
             protocols_bytes = protocols_bytes + delimiter_byte + l
 
-    if flag == "deleted":
+    elif flag == "deleted":
         pass
 
-    if flag == "modified":
+    elif flag == "modified":
+        until_wait(src_path)
         f = open(src_path, 'rb')
         l = f.read()
         protocols_bytes = protocols_bytes + delimiter_byte + l
 
-    if flag == "moved":
+    elif flag == "moved":
         new_path_bytes = bytes((str(send_new_path)), "utf-8")
         protocols_bytes = protocols_bytes + delimiter_byte + new_path_bytes
 
     return protocols_bytes
+
+
+def until_wait(path):
+    print(str(path) + " - wating.............")
+    copying = True
+    size2 = -1
+    while copying:
+        size = os.path.getsize(path)
+        if size == size2:
+            break
+        else:
+            size2 = os.path.getsize(path)
+            time.sleep(1)
+            print(".............")
+    print("file copy has now finished")

@@ -8,6 +8,9 @@ from watchdog.events import *
 
 import utils
 
+last_file_created = None
+counter = 0
+
 port_number = int(sys.argv[2])
 dir_path = sys.argv[3]
 ip = sys.argv[1]
@@ -56,8 +59,8 @@ def receive_info(s):
     stop = True
 
     utils.receive_info(data, dir_path)
-    time.sleep(0.1)
-    stop = False
+    time.sleep(1)
+    stop = Falsed
 
 
 def activate_change(src_path, flag, new_path):
@@ -68,16 +71,13 @@ def activate_change(src_path, flag, new_path):
 def on_created(event):
     if stop:
         return
-    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
-
     print(f"hey, {event.src_path} has been created!")
 
 
 def on_deleted(event):
     if stop:
         return
-    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
 
@@ -90,7 +90,6 @@ def on_modified(event):
         return
     if isinstance(event, DirModifiedEvent):
         return
-    time.sleep(1)
     activate_change(event.src_path, event.event_type, None)
 
     print(f"hey buddy, {event.src_path} has been modified")

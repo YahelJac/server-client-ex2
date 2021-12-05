@@ -89,9 +89,9 @@ if __name__ == '__main__':
         data = bytes('', 'utf-8')
         # getting info
         while True:
-            temp = client_socket.recv(1024)
+            temp = client_socket.recv(10000)
             data = data + temp
-            if temp == b'' or len(temp) < 1024:
+            if temp == b'' or len(temp) < 10000:
                 break
 
         if data == b'new connection':
@@ -114,17 +114,15 @@ if __name__ == '__main__':
         else:
             splited = data.split(b'|')
 
-            try:
 
-                id = splited[0].decode('utf-8').strip("\'")
+            id = splited[0].decode('utf-8').strip("\'")
 
-                internal_id = splited[1].decode('utf-8').strip("'")
+            internal_id = splited[1].decode('utf-8').strip("'")
 
-                flag = splited[2].decode('utf-8')
-                path = splited[3].decode('utf-8')
-                list = dict.get(id)
-            except:
-                print("ho")
+            flag = splited[2].decode('utf-8')
+            path = splited[3].decode('utf-8')
+            list = dict.get(id)
+
 
             # if new user wants to connect
             if flag == "connecting user":
