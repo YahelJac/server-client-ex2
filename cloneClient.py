@@ -25,7 +25,7 @@ def first_connection():
     data = bytes('new connection', 'utf-8')
     s.send(data)
     data = s.recv(1024)
-    print("my id: ", data)
+    print(data.decode('utf-8'))
     id = str(data)[2:-1]
     internal_id = "1"
     s.close()
@@ -50,7 +50,9 @@ def receive_info(s):
         return
 
     stop = True
+
     utils.receive_info(data, dir_path)
+    time.sleep(0.1)
     stop = False
 
 

@@ -8,13 +8,13 @@ def receive_info(data, dir_path):
     if (len(data) == 0):
         return
 
-    splited = data.decode('utf-8').split("|")
-    num, flag, path = splited[0][:-1], splited[2], os.path.join(dir_path, splited[3])
+    splited = data.split(b'|', maxsplit = 4)
+    num, flag, path = splited[0][:-1].decode('utf-8'), splited[2].decode('utf-8'), os.path.join(dir_path, splited[3].decode('utf-8'))
     other = None
     if (flag == "created"):
         is_file = False
         try:
-            other = bytes(splited[4], 'utf-8')
+            other = splited[4]
             is_file = True
         except:
             pass
@@ -22,10 +22,10 @@ def receive_info(data, dir_path):
     elif (flag == "deleted"):
         need_delete(path)
     elif (flag == "modified"):
-        other = bytes(splited[4], 'utf-8')
+        other = splited[4]
         need_modify(path, other)
     elif (flag == "moved"):
-        other = bytes(splited[3], 'utf-8')
+        other = splited[3]
         need_move(path, os.path.join(dir_path, splited[4]))
 
 
