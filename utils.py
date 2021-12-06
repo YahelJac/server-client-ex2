@@ -32,11 +32,13 @@ def receive_info(data, dir_path):
 
 
 def need_delete(path):
+    until_wait(path)
     os.remove(path)
     print("deleted:" + path)
 
 
 def need_move(src_path, dest_path):
+    until_wait(src_path)
     os.replace(src_path, dest_path)
     print("moved from:" + src_path + "to" + dest_path)
 
@@ -53,6 +55,7 @@ def need_created(path, data, is_file):
 
 
 def need_modify(path, data):
+    until_wait(path)
     os.remove(path)
     f = open(path, 'wb')
     f.close()
