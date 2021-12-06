@@ -8,6 +8,9 @@ from watchdog.events import *
 
 import utils
 
+last_file_created = None
+counter = 0
+
 port_number = int(sys.argv[2])
 dir_path = sys.argv[3]
 ip = sys.argv[1]
@@ -23,6 +26,10 @@ def first_connection():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     data = bytes('new connection', 'utf-8')
+
+    s.send(bytes(str(len(data)), 'utf-8'))
+
+    s.recv(1024)
     s.send(data)
     data = s.recv(1024)
     print(data.decode('utf-8'))
@@ -36,6 +43,9 @@ def connecting_user(id):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     data = bytes(str(id) + "|" + "temp" + "|connecting user" + "|", 'utf-8')
+    s.send(bytes(str(len(data)), 'utf-8'))
+
+    s.recv(1024)
     s.send(data)
     data = s.recv(1024)
     print("my internal id: ", data)
@@ -45,14 +55,27 @@ def connecting_user(id):
 
 def receive_info(s):
     global stop
-    data = s.recv(1024)
+    data = bytes('', 'utf-8')
+    try:
+        lenOfData = s.recv(1024).decode()
+        s.send(b'len')
+
+        while True:
+            temp = s.recv(10000)
+            data = data + temp
+            if len(data) == int(lenOfData):
+                break
+
+    except:
+        return
+
     if (len(data) == 0):
         return
 
     stop = True
 
     utils.receive_info(data, dir_path)
-    time.sleep(0.1)
+    time.sleep(1)
     stop = False
 
 
@@ -65,7 +88,6 @@ def on_created(event):
     if stop:
         return
     activate_change(event.src_path, event.event_type, None)
-
     print(f"hey, {event.src_path} has been created!")
 
 
@@ -79,11 +101,11 @@ def on_deleted(event):
 
 
 def on_modified(event):
+
     if stop:
         return
     if isinstance(event, DirModifiedEvent):
         return
-
     activate_change(event.src_path, event.event_type, None)
 
     print(f"hey buddy, {event.src_path} has been modified")
@@ -92,6 +114,7 @@ def on_modified(event):
 def on_moved(event):
     if stop:
         return
+    time.sleep(1)
     activate_change(event.src_path, event.event_type, event.dest_path)
 
     print(f"ok ok ok, someone  yoavyoav moved {event.src_path} to {event.dest_path}")
@@ -101,9 +124,14 @@ def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     if changes:
+
         data = changes.pop(0)
+
     else:
         data = bytes(str(id) + "|" + internal_id + "|receive" + "|", 'utf-8')
+
+    s.send(bytes(str(len(data)), 'utf-8'))
+    s.recv(1024)
     s.send(data)
     receive_info(s)
     s.close()
@@ -128,7 +156,7 @@ if __name__ == "__main__":
     my_event_handler.on_modified = on_modified
     my_event_handler.on_moved = on_moved
 
-    observer = Observer()
+    observer = Observer(timeout=0.5)
     observer.schedule(my_event_handler, tracking_path, recursive=True)
     observer.start()
     time_to_sleep = int(sys.argv[4])

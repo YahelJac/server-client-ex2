@@ -8,8 +8,10 @@ def receive_info(data, dir_path):
     if (len(data) == 0):
         return
 
-    splited = data.split(b'|', maxsplit = 4)
-    num, flag, path = splited[0][:-1].decode('utf-8'), splited[2].decode('utf-8'), os.path.join(dir_path, splited[3].decode('utf-8'))
+    splited = data.split(b'|', maxsplit=4)
+    num, flag, path = splited[0][:-1].decode('utf-8'), splited[2].decode('utf-8'), os.path.join(dir_path,
+                                                                                                splited[3].decode(
+                                                                                                    'utf-8'))
     other = None
     if (flag == "created"):
         is_file = False
@@ -18,7 +20,7 @@ def receive_info(data, dir_path):
             is_file = True
         except:
             pass
-        need_created(path, other,is_file)
+        need_created(path, other, is_file)
     elif (flag == "deleted"):
         need_delete(path)
     elif (flag == "modified"):
@@ -26,7 +28,7 @@ def receive_info(data, dir_path):
         need_modify(path, other)
     elif (flag == "moved"):
         other = splited[3]
-        need_move(path, os.path.join(dir_path, splited[4]))
+        need_move(path, os.path.join(dir_path, splited[4].decode('utf-8')))
 
 
 def need_delete(path):
@@ -39,7 +41,7 @@ def need_move(src_path, dest_path):
     print("moved from:" + src_path + "to" + dest_path)
 
 
-def need_created(path, data,is_file):
+def need_created(path, data, is_file):
     if not is_file:
         os.mkdir(path)
         print("dir created")
@@ -59,6 +61,7 @@ def need_modify(path, data):
     f.close()
     print("file modify")
 
+
 def from_dir_to_list(dir):
     res = []
     for root, dirs, files in os.walk(dir, topdown=False):
@@ -70,15 +73,13 @@ def from_dir_to_list(dir):
     return list(reversed(res))
 
 
-
-def add_change(src_path, flag, new_path,dir_path,id,internal_id):
+def add_change(src_path, flag, new_path, dir_path, id, internal_id):
     send_src_path = src_path[(len(dir_path)) + 1:]
     if new_path is not None:
         send_new_path = new_path[(len(dir_path)) + 1:]
 
     if flag == "modified" and not os.path.isfile(src_path):
         return False
-
 
     delimiter_byte = bytes(("|"), "utf-8")
 
@@ -124,3 +125,15 @@ def until_wait(path):
             time.sleep(1)
             print(".............")
     print("file copy has now finished")
+
+
+def upload_dir(path, internal_id,id):
+    dir_path = path
+    list_of_files = from_dir_to_list(dir_path)
+    list_of_packets = []
+    for file in list_of_files:
+        packet = add_change(os.path.join(dir_path, file), 'created', None, dir_path, id, internal_id)
+        if packet:
+            list_of_packets.append(packet)
+
+    return list_of_packets

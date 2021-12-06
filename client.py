@@ -18,6 +18,7 @@ observer = Observer()
 id = ""
 internal_id = ""
 stop = False
+tempPath = ""
 
 
 def first_connection():
@@ -26,11 +27,19 @@ def first_connection():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     data = bytes('new connection', 'utf-8')
+
+    s.send(bytes(str(len(data)), 'utf-8'))
+
+    s.recv(1024)
     s.send(data)
     data = s.recv(1024)
     print(data.decode('utf-8'))
     id = str(data)[2:-1]
     internal_id = "1"
+
+    list_of_files = utils.upload_dir(dir_path, internal_id, id)
+    for packet in list_of_files:
+        changes.append(packet)
     s.close()
 
 
@@ -39,6 +48,9 @@ def connecting_user(id):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     data = bytes(str(id) + "|" + "temp" + "|connecting user" + "|", 'utf-8')
+    s.send(bytes(str(len(data)), 'utf-8'))
+
+    s.recv(1024)
     s.send(data)
     data = s.recv(1024)
     print("my internal id: ", data)
@@ -48,8 +60,17 @@ def connecting_user(id):
 
 def receive_info(s):
     global stop
+    data = bytes('', 'utf-8')
     try:
-        data = s.recv(1024)
+        lenOfData = s.recv(1024).decode()
+        s.send(b'len')
+
+        while True:
+            temp = s.recv(10000)
+            data = data + temp
+            if len(data) == int(lenOfData):
+                break
+
     except:
         return
 
@@ -60,13 +81,14 @@ def receive_info(s):
 
     utils.receive_info(data, dir_path)
     time.sleep(1)
-    stop = Falsed
+    stop = False
 
 
 def activate_change(src_path, flag, new_path):
-    res = utils.add_change(src_path, flag, new_path, dir_path,id, internal_id)
+    res = utils.add_change(src_path, flag, new_path, dir_path, id, internal_id)
     if res:
         changes.append(res)
+
 
 def on_created(event):
     if stop:
@@ -85,7 +107,6 @@ def on_deleted(event):
 
 
 def on_modified(event):
-
     if stop:
         return
     if isinstance(event, DirModifiedEvent):
@@ -108,21 +129,26 @@ def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, port_number))
     if changes:
+
         data = changes.pop(0)
+
     else:
         data = bytes(str(id) + "|" + internal_id + "|receive" + "|", 'utf-8')
+
+    s.send(bytes(str(len(data)), 'utf-8'))
+    s.recv(1024)
     s.send(data)
     receive_info(s)
     s.close()
 
 
 if __name__ == "__main__":
+    changes = []
     if len(sys.argv) == 6:
         connecting_user(sys.argv[5])
         id = sys.argv[5]
     else:
         first_connection()
-    changes = []
 
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(message)s',

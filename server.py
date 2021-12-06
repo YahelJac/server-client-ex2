@@ -33,35 +33,11 @@ def connecting_user(id):
     return dict[id][0]
 
 
-# # same as client
-# def receive_new_connect(client_socket, id):
-#     dir = bytes('', 'utf-8')
-#     while len(dir) < 10000000:
-#         temp = client_socket.recv(1024)
-#         dir = dir + temp
-#         if temp == b'' or len(temp) < 1024:
-#             break
-#
-#     os.mkdir(id)
-#     f = open(id + ".zip", 'wb')
-#     f.write(dir)
-#     f.close()
-#     str2 = "bash -c 'unzip -q " + id + ".zip -d " + id + "'"
-#     os.system(str2)
-#     os.remove(id + ".zip")
-
-
 # same as client
 def send_to_new_user(id, internal_id):
-    dir_path = './' + id
-    list_of_files = utils.from_dir_to_list(dir_path)
-    list_of_packets = []
-    for file in list_of_files:
-        packet = utils.add_change(os.path.join(dir_path,file),'created' ,None, dir_path,id, internal_id)
-        if packet:
-            dict[id][internal_id].append(packet)
-
-
+    list_of_files = utils.upload_dir("./"+ id, internal_id,id)
+    for packet in list_of_files:
+        dict[id][internal_id].append(packet)
 
 
 
@@ -88,11 +64,16 @@ if __name__ == '__main__':
         print('Connection from: ', client_address)
         data = bytes('', 'utf-8')
         # getting info
+        lenOfData = client_socket.recv(1024).decode()
+        client_socket.send(b'len')
+
         while True:
             temp = client_socket.recv(10000)
             data = data + temp
-            if temp == b'' or len(temp) < 10000:
+            if len(data) == int(lenOfData):
                 break
+            # if temp == b'' or len(temp) < 10000:
+            #     break
 
         if data == b'new connection':
             id = new_connect()
@@ -135,6 +116,10 @@ if __name__ == '__main__':
                 internal_id = int(internal_id)
                 if dict[id][int(internal_id)] is not None and len(dict[id][int(internal_id)]) != 0:
                     value = dict[id][int(internal_id)].pop(0)
+                    client_socket.send(bytes(str(len(value)), 'utf-8'))
+
+                    client_socket.recv(1024)
+
                     client_socket.send(value)
 
 
