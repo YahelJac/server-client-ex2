@@ -18,7 +18,7 @@ observer = Observer()
 id = ""
 internal_id = ""
 stop = False
-tempPath = ""
+tempPath = None
 
 
 def first_connection():
@@ -59,7 +59,7 @@ def connecting_user(id):
 
 
 def receive_info(s):
-    global stop
+    global tempPath
     data = bytes('', 'utf-8')
     try:
         lenOfData = s.recv(1024).decode()
@@ -77,11 +77,16 @@ def receive_info(s):
     if (len(data) == 0):
         return
 
-    stop = True
+    splited = data.split(b'|', maxsplit=4)
+    num, flag, path = splited[0][:-1].decode('utf-8'), splited[2].decode('utf-8'), os.path.join(dir_path,
+                                                                                                splited[3].decode(
+                                                                                                    'utf-8'))
+    tempPath = path
 
     utils.receive_info(data, dir_path)
     time.sleep(1)
-    stop = False
+
+    tempPath = None
 
 
 def activate_change(src_path, flag, new_path):
@@ -91,14 +96,14 @@ def activate_change(src_path, flag, new_path):
 
 
 def on_created(event):
-    if stop:
+    if tempPath == event.src_path:
         return
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been created!")
 
 
 def on_deleted(event):
-    if stop:
+    if tempPath == event.src_path:
         return
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
@@ -107,7 +112,7 @@ def on_deleted(event):
 
 
 def on_modified(event):
-    if stop:
+    if tempPath == event.src_path:
         return
     if isinstance(event, DirModifiedEvent):
         return
@@ -117,7 +122,7 @@ def on_modified(event):
 
 
 def on_moved(event):
-    if stop:
+    if tempPath == event.src_path:
         return
     time.sleep(1)
     activate_change(event.src_path, event.event_type, event.dest_path)
