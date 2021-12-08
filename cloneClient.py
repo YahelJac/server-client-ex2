@@ -17,7 +17,7 @@ ip = sys.argv[1]
 observer = Observer()
 id = ""
 internal_id = ""
-
+stop = False
 tempPath = None
 
 
@@ -84,7 +84,7 @@ def receive_info(s):
     tempPath = path
 
     utils.receive_info(data, dir_path)
-    time.sleep(1)
+    time.sleep(2)
 
     tempPath = None
 
@@ -103,7 +103,7 @@ def on_created(event):
 
 
 def on_deleted(event):
-    if tempPath == event.src_path:
+    if tempPath in event.src_path:
         return
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
@@ -150,6 +150,8 @@ def connect():
 if __name__ == "__main__":
     changes = []
     if len(sys.argv) == 6:
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
         connecting_user(sys.argv[5])
         id = sys.argv[5]
     else:
