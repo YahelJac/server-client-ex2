@@ -22,6 +22,7 @@ def receive_info(data, dir_path):
             pass
         need_created(path, other, is_file)
     elif (flag == "deleted"):
+
         need_delete(path)
     elif (flag == "modified"):
         other = splited[4]
@@ -33,8 +34,16 @@ def receive_info(data, dir_path):
 
 def need_delete(path):
     until_wait(path)
+    if os.path.isdir(path):
+        for root, dirs, files in os.walk(path, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(path)
+        return
     os.remove(path)
-    print("deleted:" + path)
 
 
 def need_move(src_path, dest_path):
