@@ -8,7 +8,6 @@ from watchdog.events import *
 
 import utils
 
-last_file_created = None
 counter = 0
 
 port_number = int(sys.argv[2])
@@ -83,7 +82,7 @@ def receive_info(s):
                                                                                                     'utf-8'))
     tempPath = path
 
-    utils.receive_info(data, dir_path)
+    utils.analyze_receive_info(data, dir_path)
     time.sleep(2)
 
     tempPath = None
@@ -103,7 +102,7 @@ def on_created(event):
 
 
 def on_deleted(event):
-    if tempPath in event.src_path:
+    if tempPath and tempPath in event.src_path:
         return
     activate_change(event.src_path, event.event_type, None)
     print(f"hey, {event.src_path} has been deleted!")
