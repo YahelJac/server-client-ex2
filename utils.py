@@ -1,11 +1,16 @@
 import os
-
 import time
 import sys
 
 
 def receive_info(data, dir_path):
-    if (len(data) == 0):
+    """
+    when a new change hase arrived, call to the function that responsible for that type of change
+    :param data: the info
+    :param dir_path: the path for the dir
+    :return:
+    """
+    if len(data) == 0:
         return
 
     splited = data.split(b'|', maxsplit=4)
@@ -13,7 +18,7 @@ def receive_info(data, dir_path):
                                                                                                 splited[3].decode(
                                                                                                     'utf-8'))
     other = None
-    if (flag == "created"):
+    if flag == "created":
         is_file = False
         try:
             other = splited[4]
@@ -21,18 +26,25 @@ def receive_info(data, dir_path):
         except:
             pass
         need_created(path, other, is_file)
-    elif (flag == "deleted"):
 
+    elif flag == "deleted":
         need_delete(path)
-    elif (flag == "modified"):
+
+    elif flag == "modified":
         other = splited[4]
         need_modify(path, other)
-    elif (flag == "moved"):
+
+    elif flag == "moved":
         other = splited[3]
         need_move(path, os.path.join(dir_path, splited[4].decode('utf-8')))
 
 
 def need_delete(path):
+    """
+    take care of deleting file
+    :param path: path to file
+    :return:
+    """
     until_wait(path)
     if os.path.isdir(path):
         for root, dirs, files in os.walk(path, topdown=False):
@@ -47,12 +59,25 @@ def need_delete(path):
 
 
 def need_move(src_path, dest_path):
+    """
+    take care of moving file
+    :param src_path: path to file
+    :param dest_path: path to the new place
+    :return:
+    """
     until_wait(src_path)
     os.replace(src_path, dest_path)
     print("moved from:" + src_path + "to" + dest_path)
 
 
 def need_created(path, data, is_file):
+    """
+    take care of creating file
+    :param path: path to dir
+    :param data: the data in the file
+    :param is_file: bool, if tile True ,if it is then dir False
+    :return:
+    """
     if not is_file:
         os.mkdir(path)
         print("dir created")
@@ -64,6 +89,12 @@ def need_created(path, data, is_file):
 
 
 def need_modify(path, data):
+    """
+    take care of modifying file
+    :param path: path to file
+    :param data: new data
+    :return:
+    """
     until_wait(path)
     os.remove(path)
     f = open(path, 'wb')
@@ -75,6 +106,11 @@ def need_modify(path, data):
 
 
 def from_dir_to_list(dir):
+    """
+    making a list of all the files than in a dir.
+    :param dir: path to dir
+    :return:
+    """
     res = []
     for root, dirs, files in os.walk(dir, topdown=False):
         for name in files:
@@ -86,6 +122,16 @@ def from_dir_to_list(dir):
 
 
 def add_change(src_path, flag, new_path, dir_path, id, internal_id):
+    """
+    creating the protocol in bites when ever a new change hase been happened.
+    :param src_path: path to the file
+    :param flag: with change happened
+    :param new_path: if there is, new path for file
+    :param dir_path: path to dir
+    :param id: the id of the dir
+    :param internal_id: the id of user that use the dir
+    :return: the info in the protocol
+    """
     send_src_path = src_path[(len(dir_path)) + 1:]
     if new_path is not None:
         send_new_path = new_path[(len(dir_path)) + 1:]
@@ -125,6 +171,11 @@ def add_change(src_path, flag, new_path, dir_path, id, internal_id):
 
 
 def until_wait(path):
+    """
+    wait until the change finish
+    :param path: path to file
+    :return:
+    """
     print(str(path) + " - wating.............")
     copying = True
     size2 = -1
@@ -139,7 +190,15 @@ def until_wait(path):
     print("file copy has now finished")
 
 
-def upload_dir(path, internal_id,id):
+def upload_dir(path, internal_id, id):
+    """
+    when a new dir has connected, this function pass all the files and creat a list of all the changes to send to a new
+    dir
+    :param path: path to dir
+    :param internal_id: user id
+    :param id: dir id
+    :return:
+    """
     dir_path = path
     list_of_files = from_dir_to_list(dir_path)
     list_of_packets = []
